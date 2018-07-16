@@ -11,7 +11,7 @@ import (
 
 func ExampleScrape() []string {
   // Request the HTML page.
-  res, err := http.Get("https://github.com/vuejs/awesome-vue/pull/2272/files/84e1d84d7902c0447dd262150fd0454723c5b0f3")
+  res, err := http.Get("https://github.com/vuejs/awesome-vue/pull/2278/files")
   if err != nil {
     log.Fatal(err)
   }
