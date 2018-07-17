@@ -6,6 +6,7 @@ import (
   "fmt"
   "context"
   "github.com/shurcooL/githubv4"
+  "./sub"
 )
 
 /*
@@ -35,7 +36,24 @@ query {
 }
 */
 
-func getPullReq(owner string, name string) {
+type PullRequest struct {
+  Title  githubv4.String
+  Merged githubv4.Boolean
+  MergedAt githubv4.DateTime
+  Url   githubv4.URI
+}
+
+type Query struct {
+  Repository struct {
+    PullRequests struct {
+      Nodes []struct {
+        PullRequest `graphql:"... on PullRequest"`
+      }
+    } `graphql:"pullRequests(last: 20,states: [MERGED], orderBy: {field: UPDATED_AT,direction: ASC})"`
+  } `graphql:"repository(owner: $owner, name: $name)"`
+}
+
+func getPullReq(owner string, name string) Query {
   src := oauth2.StaticTokenSource(
     &oauth2.Token{AccessToken: os.Getenv("GITHUB_TOKEN")},
   )
@@ -43,22 +61,8 @@ func getPullReq(owner string, name string) {
 
   client := githubv4.NewClient(httpClient)
 
-  type PullRequest struct {
-    Title  githubv4.String
-    Merged githubv4.Boolean
-    MergedAt githubv4.DateTime
-    Url   githubv4.URI
-  }
 
-  var query2 struct {
-    Repository struct {
-      PullRequests struct {
-        Nodes []struct {
-          PullRequest `graphql:"... on PullRequest"`
-        }
-      } `graphql:"pullRequests(last: 20,states: [MERGED], orderBy: {field: UPDATED_AT,direction: ASC})"`
-    } `graphql:"repository(owner: $owner, name: $name)"`
-  }
+  var query2 = Query{}
 
 
   variables2 := map[string]interface{}{
@@ -71,18 +75,24 @@ func getPullReq(owner string, name string) {
     fmt.Println(err2)
   }
 
-  for _, pr := range query2.Repository.PullRequests.Nodes {
-    fmt.Println("---------")
-    fmt.Println(pr.Title)
-    fmt.Println(pr.Merged)
-    fmt.Println(pr.MergedAt)
-    fmt.Println(pr.Url)
-  }
+  //for _, pr := range query2.Repository.PullRequests.Nodes {
+  //  fmt.Println("---------")
+  //  fmt.Println(pr.Title)
+  //  fmt.Println(pr.Merged)
+  //  fmt.Println(pr.MergedAt)
+  //  fmt.Println(pr.Url)
+  //}
 
-
-
+  return query2
 }
 
 func main() {
-  getPullReq("vuejs", "awesome-vue")
+  pullRequests := getPullReq("vuejs", "awesome-vue")
+  fmt.Print(pullRequests.Repository.PullRequests.Nodes[0].Url)
+
+  diffs := sub.ExampleScrape(pullRequests.Repository.PullRequests.Nodes[0].Url.String())
+  mathcher := diffs[0]
+  url := sub.GetUrl(mathcher)
+  title := sub.GetTitle(mathcher)
+  fmt.Printf("Url: %s, Title: %s",url, title)
 }
