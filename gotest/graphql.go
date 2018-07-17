@@ -7,6 +7,7 @@ import (
   "context"
   "github.com/shurcooL/githubv4"
   "./sub"
+  "./dynamo"
 )
 
 /*
@@ -29,7 +30,8 @@ query {
         title,
         merged,
         mergedAt,
-        url
+        url,
+        id
       }
     }
   }
@@ -41,6 +43,7 @@ type PullRequest struct {
   Merged githubv4.Boolean
   MergedAt githubv4.DateTime
   Url   githubv4.URI
+  Id    githubv4.ID
 }
 
 type Query struct {
@@ -90,9 +93,13 @@ func main() {
   pullRequests := getPullReq("vuejs", "awesome-vue")
   fmt.Print(pullRequests.Repository.PullRequests.Nodes[0].Url)
 
-  diffs := sub.ExampleScrape(pullRequests.Repository.PullRequests.Nodes[0].Url.String())
-  mathcher := diffs[0]
-  url := sub.GetUrl(mathcher)
-  title := sub.GetTitle(mathcher)
-  fmt.Printf("Url: %s, Title: %s",url, title)
+  for _, pr := range pullRequests.Repository.PullRequests.Nodes {
+    diffs := sub.ExampleScrape(pr.Url.String() + "/files")
+    url := sub.GetUrl(diffs[0])
+    title := sub.GetTitle(diffs[0])
+    fmt.Printf("Url: %s, Title: %s\n",url, title)
+  }
+
+  dynamo.dbRegist()
+
 }

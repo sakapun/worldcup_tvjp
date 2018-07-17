@@ -33,7 +33,7 @@ func ExampleScrape(uri string) []string {
 }
 
 func GetUrl(diffStr string) string {
-  re1 := regexp.MustCompile(`\((https:.*)\)`)
+  re1 := regexp.MustCompile(`\((https:.*?)\)`)
   diff := re1.FindString(diffStr)
   r := strings.NewReplacer("(", "", ")", "")
   return r.Replace(diff)
