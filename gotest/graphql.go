@@ -6,7 +6,6 @@ import (
   "fmt"
   "context"
   "github.com/shurcooL/githubv4"
-  "./sub"
   "./dynamo"
 )
 
@@ -93,13 +92,13 @@ func main() {
   pullRequests := getPullReq("vuejs", "awesome-vue")
   fmt.Print(pullRequests.Repository.PullRequests.Nodes[0].Url)
 
-  for _, pr := range pullRequests.Repository.PullRequests.Nodes {
-    diffs := sub.ExampleScrape(pr.Url.String() + "/files")
-    url := sub.GetUrl(diffs[0])
-    title := sub.GetTitle(diffs[0])
-    fmt.Printf("Url: %s, Title: %s\n",url, title)
-  }
+  //for _, pr := range pullRequests.Repository.PullRequests.Nodes {
+  //  diffs := sub.ExampleScrape(pr.Url.String() + "/files")
+  //  url := sub.GetUrl(diffs[0])
+  //  title := sub.GetTitle(diffs[0])
+  //  fmt.Printf("Url: %s, Title: %s\n",url, title)
+  //}
 
-  dynamo.dbRegist()
+  dynamo.DbRegist()
 
 }
