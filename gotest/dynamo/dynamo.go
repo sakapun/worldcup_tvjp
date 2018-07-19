@@ -25,11 +25,11 @@ type widget struct {
 
 
 func DbRegist() {
-  db := dynamo.New(session.New(), &aws.Config{Region: aws.String("ap-northeast-1")})
+  db := Connect()
   table := db.Table("Widgets")
 
   // put item
-  w := widget{UserID: 613, Time: time.Now(), Msg: "hello"}
+  w := widget{UserID: 613, Time: time.Now(), Msg: "hello", Count: 3}
   err := table.Put(w).Run()
   if err != nil {
 
@@ -38,12 +38,33 @@ func DbRegist() {
   // get the same item
   var result widget
   err = table.Get("UserID", w.UserID).
-    Range("Time", dynamo.Equal, w.Time).
+    //Range("Time", dynamo.Equal, w.Time).
     Filter("'Count' = ? AND $ = ?", w.Count, "Message", w.Msg). // placeholders in expressions
     One(&result)
+  fmt.Println(result)
 
   // get all items
   var results []widget
   err = table.Scan().All(&results)
   fmt.Print(results)
+}
+
+func Connect () *dynamo.DB {
+  return dynamo.New(session.New(), &aws.Config{Region: aws.String("ap-northeast-1")})
+}
+
+type AwesomeLink struct {
+  Id         string       // Hash key, a.k.a. partition key
+  MergedAt   time.Time // Range key, a.k.a. sort key
+
+  Title      string
+  Url        string
+
+
+  //
+  //Msg       string              `dynamo:"Message"`
+  //Count     int                 `dynamo:",omitempty"`
+  //Friends   []string            `dynamo:",set"` // Sets
+  //Set       map[string]struct{} `dynamo:",set"` // Map sets, too!
+  //SecretKey string              `dynamo:"-"`    // Ignored
 }

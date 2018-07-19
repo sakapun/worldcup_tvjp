@@ -7,6 +7,7 @@ import (
   "context"
   "github.com/shurcooL/githubv4"
   "./dynamo"
+  "./sub"
 )
 
 /*
@@ -42,7 +43,7 @@ type PullRequest struct {
   Merged githubv4.Boolean
   MergedAt githubv4.DateTime
   Url   githubv4.URI
-  Id    githubv4.ID
+  Id    string
 }
 
 type Query struct {
@@ -92,13 +93,28 @@ func main() {
   pullRequests := getPullReq("vuejs", "awesome-vue")
   fmt.Print(pullRequests.Repository.PullRequests.Nodes[0].Url)
 
-  //for _, pr := range pullRequests.Repository.PullRequests.Nodes {
-  //  diffs := sub.ExampleScrape(pr.Url.String() + "/files")
-  //  url := sub.GetUrl(diffs[0])
-  //  title := sub.GetTitle(diffs[0])
-  //  fmt.Printf("Url: %s, Title: %s\n",url, title)
-  //}
+  db := dynamo.Connect()
+  table := db.Table("AwesomeLinks")
+  for _, pr := range pullRequests.Repository.PullRequests.Nodes {
+    diffs := sub.ExampleScrape(pr.Url.String() + "/files")
+    url := sub.GetUrl(diffs[0])
+    title := sub.GetTitle(diffs[0])
 
-  dynamo.DbRegist()
+    awesomeLink := dynamo.AwesomeLink{
+      Id: pr.Id,
+      MergedAt: pr.MergedAt.UTC(),
+      Title: title,
+      Url: url,
+    }
+
+    err := table.Put(awesomeLink).Run()
+    if err != nil {
+
+    }
+
+    fmt.Print(awesomeLink)
+  }
+
 
 }
+
