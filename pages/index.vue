@@ -17,6 +17,13 @@
           href="https://github.com/nuxt/nuxt.js"
           target="_blank"
           class="button--grey">GitHub</a>
+        <div
+           v-for="content in json"
+           v-bind:key="content.Id">
+          <a :href="content.Url"
+              target="_blank">{{content.Title}}</a>
+          : {{content.MergedAt}}
+        </div>
       </div>
     </div>
   </section>
@@ -28,7 +35,14 @@ import AppLogo from '~/components/AppLogo.vue'
 export default {
   components: {
     AppLogo
-  }
+  },
+  async asyncData (ctx) {
+    const {data} = await ctx.$axios.get("/api");
+    const json = data
+      .map(d => ({...d, MergedAt: new Date(d.MergedAt)}))
+      .sort((a, b) => b.MergedAt.getTime() - a.MergedAt.getTime());
+    return {json};
+  },
 }
 </script>
 

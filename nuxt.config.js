@@ -43,5 +43,12 @@ module.exports = {
   css: [
     // node.js module but we specify the pre-processor
     { src: '~assets/main.sass', lang: 'sass' }
-  ]
+  ],
+  modules: [
+    "@nuxtjs/proxy",
+    "@nuxtjs/axios"
+  ],
+  proxy: {
+    "/api" : "http://localhost:8080"
+  }
 }
