@@ -52,11 +52,15 @@ type Query struct {
       Nodes []struct {
         PullRequest `graphql:"... on PullRequest"`
       }
-    } `graphql:"pullRequests(last: 20,states: [MERGED], orderBy: {field: UPDATED_AT,direction: ASC})"`
+      PageInfo struct {
+        StartCursor githubv4.String
+        HasPreviousPage githubv4.Boolean
+      }
+    } `graphql:"pullRequests(last: 100,states: [MERGED], orderBy: {field: UPDATED_AT,direction: ASC}, before: $startCursor)"`
   } `graphql:"repository(owner: $owner, name: $name)"`
 }
 
-func getPullReq(owner string, name string) Query {
+func getPullReq(owner string, name string, startCursor string) (Query, string, bool) {
   src := oauth2.StaticTokenSource(
     &oauth2.Token{AccessToken: os.Getenv("GITHUB_TOKEN")},
   )
@@ -71,48 +75,68 @@ func getPullReq(owner string, name string) Query {
   variables2 := map[string]interface{}{
     "owner": githubv4.String(owner),
     "name":  githubv4.String(name),
+    "startCursor":  (*githubv4.String)(nil),
   }
+  if startCursor != "" {
+    variables2["startCursor"] = githubv4.String(startCursor)
+  }
+  fmt.Println(variables2)
+
 
   err2 := client.Query(context.Background(), &query2, variables2)
   if err2 != nil {
     fmt.Println(err2)
   }
 
-  //for _, pr := range query2.Repository.PullRequests.Nodes {
-  //  fmt.Println("---------")
-  //  fmt.Println(pr.Title)
-  //  fmt.Println(pr.Merged)
-  //  fmt.Println(pr.MergedAt)
-  //  fmt.Println(pr.Url)
-  //}
+  for _, pr := range query2.Repository.PullRequests.Nodes {
+   fmt.Println("---------")
+   fmt.Println(pr.Title)
+   fmt.Println(pr.Merged)
+   fmt.Println(pr.MergedAt)
+   fmt.Println(pr.Url)
+  }
 
-  return query2
+  return query2, string(query2.Repository.PullRequests.PageInfo.StartCursor),bool(query2.Repository.PullRequests.PageInfo.HasPreviousPage)
 }
 
-func main() {
-  pullRequests := getPullReq("vuejs", "awesome-vue")
+func AddLoop (pullRequests Query) {
   fmt.Print(pullRequests.Repository.PullRequests.Nodes[0].Url)
 
   db := dynamo.Connect()
   table := db.Table("AwesomeLinks")
   for _, pr := range pullRequests.Repository.PullRequests.Nodes {
     diffs := sub.ExampleScrape(pr.Url.String() + "/files")
-    url := sub.GetUrl(diffs[0])
-    title := sub.GetTitle(diffs[0])
+    if len(diffs) > 0 {
+      url := sub.GetUrl(diffs[0])
+      title := sub.GetTitle(diffs[0])
 
-    awesomeLink := dynamo.AwesomeLink{
-      Id: pr.Id,
-      MergedAt: pr.MergedAt.UTC(),
-      Title: title,
-      Url: url,
+      awesomeLink := dynamo.AwesomeLink{
+        Id: pr.Id,
+        MergedAt: pr.MergedAt.UTC(),
+        Title: title,
+        Url: url,
+      }
+
+      err := table.Put(awesomeLink).Run()
+      if err != nil {
+
+      }
+
+      fmt.Print(awesomeLink)
     }
+  }
+}
 
-    err := table.Put(awesomeLink).Run()
-    if err != nil {
-
+func main() {
+  startCursor := ""
+  for {
+    pullRequests, returnStartCursor, hasPreviousPage := getPullReq("vuejs", "awesome-vue", startCursor)
+    fmt.Print(pullRequests)
+    AddLoop(pullRequests)
+    if hasPreviousPage == false {
+      break
     }
-
-    fmt.Print(awesomeLink)
+    startCursor = returnStartCursor
   }
 
 
