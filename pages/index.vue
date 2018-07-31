@@ -2,7 +2,7 @@
   <div>
     <div class="hero is-medium is-primary is-bold">
       <div class="hero-body">
-        <h1 class="fuck title">
+        <h1 class="fuck title" @click="clicked">
           Awesome Vue New Update
         </h1>
       </div>
@@ -18,6 +18,8 @@
 
 <script>
 import AwesomeItem from '~/components/AwesomeItem.vue';
+import '~/plugins/amplify';
+import {API, graphqlOperation} from "aws-amplify";
 export default {
   components: {
     AwesomeItem
@@ -28,6 +30,22 @@ export default {
       .map(d => ({...d, MergedAt: new Date(d.MergedAt)}))
       .sort((a, b) => b.MergedAt.getTime() - a.MergedAt.getTime());
     return {json};
+  },
+  methods: {
+    async clicked() {
+      console.log(graphqlOperation)
+      const query = `query list {
+        listAwesomeLinks(nextToken: null) {
+          items {
+            MergedAt
+            Url
+            Title
+          }
+        }
+      }`;
+      const res = await API.graphql(graphqlOperation(query));
+      console.log(res.data.listAwesomeLinks.items);u
+    }
   },
 }
 </script>
