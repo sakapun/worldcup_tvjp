@@ -77,7 +77,7 @@ func AddLoop (pullRequests Query) {
   fmt.Print(pullRequests.Repository.PullRequests.Nodes[0].Url)
 
   db := dynamo.Connect()
-  table := db.Table("AwesomeLinks")
+  table := db.Table("AwesomeVueLinks")
   for _, pr := range pullRequests.Repository.PullRequests.Nodes {
     diffs := sub.ExampleScrape(pr.Url.String() + "/files")
     if len(diffs) > 0 {
@@ -89,6 +89,7 @@ func AddLoop (pullRequests Query) {
         MergedAt: pr.MergedAt.UTC(),
         Title: title,
         Url: url,
+        Type: "link",
       }
 
       err := table.Put(awesomeLink).Run()

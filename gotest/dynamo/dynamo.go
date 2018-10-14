@@ -59,6 +59,7 @@ type AwesomeLink struct {
 
   Title      string
   Url        string
+  Type       string
 
 
   //
