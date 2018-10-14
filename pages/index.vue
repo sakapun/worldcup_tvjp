@@ -26,7 +26,7 @@ export default {
   },
   async asyncData (ctx) {
     const query = `query list {
-        orderDesc {
+        listLinks {
           items {
             MergedAt
             Url
@@ -38,14 +38,14 @@ export default {
     const res = await API.graphql(graphqlOperation(query));
     // console.log(res.data);
     return {
-      json: res.data.orderDesc.items,
-      nextToken: res.data.orderDesc.nextToken
+      json: res.data.listLinks.items,
+      nextToken: res.data.listLinks.nextToken
     };
   },
   methods: {
     async clicked() {
       const query = `query list {
-        orderDesc(nextToken: "${this.nextToken}") {
+        listLinks(nextToken: "${this.nextToken}") {
           items {
             MergedAt
             Url
@@ -56,9 +56,9 @@ export default {
       }`;
       const res = await API.graphql(graphqlOperation(query));
       // console.log(res.data.listAwesomeLinks.items);
-      this.json = this.json.concat(res.data.orderDesc.items);
-      this.nextToken = res.data.orderDesc.nextToken;
-      return res.data.orderDesc;
+      this.json = this.json.concat(res.data.listLinks.items);
+      this.nextToken = res.data.listLinks.nextToken;
+      return res.data.listLinks;
     }
   },
 }
