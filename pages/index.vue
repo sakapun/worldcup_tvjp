@@ -25,26 +25,40 @@ export default {
     AwesomeItem
   },
   async asyncData (ctx) {
-    const {data} = await ctx.$axios.get("/api");
-    const json = data
-      .map(d => ({...d, MergedAt: new Date(d.MergedAt)}))
-      .sort((a, b) => b.MergedAt.getTime() - a.MergedAt.getTime());
-    return {json};
-  },
-  methods: {
-    async clicked() {
-      console.log(graphqlOperation)
-      const query = `query list {
-        listAwesomeLinks(nextToken: null) {
+    const query = `query list {
+        orderDesc {
           items {
             MergedAt
             Url
             Title
-          }
+          },
+          nextToken
+        }
+      }`;
+    const res = await API.graphql(graphqlOperation(query));
+    // console.log(res.data);
+    return {
+      json: res.data.orderDesc.items,
+      nextToken: res.data.orderDesc.nextToken
+    };
+  },
+  methods: {
+    async clicked() {
+      const query = `query list {
+        orderDesc(nextToken: "${this.nextToken}") {
+          items {
+            MergedAt
+            Url
+            Title
+          },
+          nextToken
         }
       }`;
       const res = await API.graphql(graphqlOperation(query));
-      console.log(res.data.listAwesomeLinks.items);u
+      // console.log(res.data.listAwesomeLinks.items);
+      this.json = this.json.concat(res.data.orderDesc.items);
+      this.nextToken = res.data.orderDesc.nextToken;
+      return res.data.orderDesc;
     }
   },
 }
