@@ -7,6 +7,7 @@
          target="_blank">{{item.Title}}</a>
       </div>
       <div class="subtitle">{{item.MergedAt | formatedDate}}</div>
+      <div class="description">{{item.Description}}</div>
     </div>
   </div>
 </template>
@@ -26,6 +27,9 @@
           type: String
         },
         MergedAt: {
+          type: String
+        },
+        Description: {
           type: String
         }
       }

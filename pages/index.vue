@@ -26,17 +26,18 @@ export default {
   },
   async asyncData (ctx) {
     const query = `query list {
-        listLinks {
+        listLinks(limit: 200) {
           items {
             MergedAt
             Url
             Title
+            Description
           },
           nextToken
         }
       }`;
     const res = await API.graphql(graphqlOperation(query));
-    // console.log(res.data);
+    console.log(res.data.listLinks.items[4]);
     return {
       json: res.data.listLinks.items,
       nextToken: res.data.listLinks.nextToken
@@ -45,11 +46,12 @@ export default {
   methods: {
     async clicked() {
       const query = `query list {
-        listLinks(nextToken: "${this.nextToken}") {
+        listLinks(limit: 200, nextToken: "${this.nextToken}") {
           items {
             MergedAt
             Url
             Title
+            Description
           },
           nextToken
         }
