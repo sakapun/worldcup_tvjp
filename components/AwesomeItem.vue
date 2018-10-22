@@ -2,12 +2,12 @@
   <div class="box">
     <div class="column">
       <div>
-        <a :href="item.Url"
+        <a :href="item.url"
          class="title"
-         target="_blank">{{item.Title}}</a>
+         target="_blank">{{item.title}}</a>
       </div>
-      <div class="subtitle">{{item.MergedAt | formatedDate}}</div>
-      <div class="description">{{item.Description}}</div>
+      <div class="subtitle">{{item.mergedAt | formatedDate}}</div>
+      <div class="description">{{item.description}}</div>
     </div>
   </div>
 </template>
@@ -20,16 +20,16 @@
     name: "AwesomeItem",
     props: {
       item: {
-        Title: {
+        title: {
           type: String
         },
-        Url: {
+        url: {
           type: String
         },
-        MergedAt: {
+        mergedAt: {
           type: String
         },
-        Description: {
+        description: {
           type: String
         }
       }

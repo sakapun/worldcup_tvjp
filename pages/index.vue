@@ -25,42 +25,42 @@ export default {
     AwesomeItem
   },
   async asyncData (ctx) {
-    const query = `query list {
-        listLinks(limit: 200) {
+    const query = `query {
+        querySort(limit: 200) {
           items {
-            MergedAt
-            Url
-            Title
-            Description
+            mergedAt
+            url
+            title
+            description
           },
           nextToken
         }
       }`;
     const res = await API.graphql(graphqlOperation(query));
-    console.log(res.data.listLinks.items[4]);
+    // console.log(res.data.querySort.items[4]);
     return {
-      json: res.data.listLinks.items,
-      nextToken: res.data.listLinks.nextToken
+      json: res.data.querySort.items,
+      nextToken: res.data.querySort.nextToken
     };
   },
   methods: {
     async clicked() {
       const query = `query list {
-        listLinks(limit: 200, nextToken: "${this.nextToken}") {
+        querySort(limit: 200, nextToken: "${this.nextToken}") {
           items {
-            MergedAt
-            Url
-            Title
-            Description
+            mergedAt
+            url
+            title
+            description
           },
           nextToken
         }
       }`;
       const res = await API.graphql(graphqlOperation(query));
       // console.log(res.data.listAwesomeLinks.items);
-      this.json = this.json.concat(res.data.listLinks.items);
-      this.nextToken = res.data.listLinks.nextToken;
-      return res.data.listLinks;
+      this.json = this.json.concat(res.data.querySort.items);
+      this.nextToken = res.data.querySort.nextToken;
+      return res.data.querySort;
     }
   },
 }
