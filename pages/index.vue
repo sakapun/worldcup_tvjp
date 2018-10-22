@@ -2,7 +2,7 @@
   <div>
     <div class="hero is-medium is-primary is-bold">
       <div class="hero-body">
-        <h1 class="fuck title" @click="clicked">
+        <h1 class="fuck title">
           Awesome Vue New Update
         </h1>
       </div>
@@ -12,6 +12,11 @@
         v-for="item in json"
         v-bind:key="item.Id"
         :item="item" />
+        <div class="has-text-centered">
+          <a class="button is-primary is-fullwidth" @click="clicked">
+            next
+          </a>
+        </div>
     </section>
   </div>
 </template>
@@ -26,7 +31,7 @@ export default {
   },
   async asyncData (ctx) {
     const query = `query {
-        querySort(limit: 200) {
+        querySort(limit: 20) {
           items {
             mergedAt
             url
@@ -46,7 +51,7 @@ export default {
   methods: {
     async clicked() {
       const query = `query list {
-        querySort(limit: 200, nextToken: "${this.nextToken}") {
+        querySort(limit: 20, nextToken: "${this.nextToken}") {
           items {
             mergedAt
             url
